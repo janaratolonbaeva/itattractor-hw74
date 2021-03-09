@@ -1,16 +1,24 @@
 const express = require('express');
+const fs = require('fs');
+const path = './messages';
 const router = express.Router();
 const fileDb = require('../fileDb');
 
 router.get('/', (req, res) => {
-	const messages = fileDb.getMessages();
-	res.send(messages);
+	fs.readdir(path, (err, files) => {
+		if (err) {
+			return console.log(err);
+		}
+		const messages = [];
+		files.forEach(file => {
+			const result = fs.readFileSync(path + '/' + file);
+			const resultParse = JSON.parse(result);
+			messages.push(resultParse);
+		});
+		const lastFiveMessages = messages.slice((messages.length - 5), messages.length);
+		res.send(lastFiveMessages);
+	});
 });
-
-// router.get('/:id', (req, res) => {
-// 	const message = fileDb.getMessageByDate(req.params.data);
-// 	res.send('Hello id');
-// });
 
 router.post('/', (req, res) => {
 	fileDb.addMessage(req.body);
